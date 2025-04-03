@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор случайных чисел по темпу</title>
+    <style>
+        /* Увеличиваем размер шрифта для сгенерированных текстов */
+        #kickPlaceText, #snarePlaceText, #lineText, #kickLabel, #snareLabel {
+            font-size: 2em; /* Размер шрифта увеличен */
+        }
+
+        /* Убираем пробел между строками h и s */
+        #lineText, #snarePlaceText {
+            margin-bottom: 0; /* Убираем нижний отступ */
+        }
+
+        /* Убираем любые отступы у меток, чтобы они шли без разрывов */
+        #kickLabel, #snareLabel {
+            display: inline; /* Делает метки inline, чтобы текст шёл в одну строку */
+        }
+    </style>
+</head>
+<body>
+    <h1>Генератор случайных чисел в темпе песни</h1>
+    
+    <label for="bpm">Введите BPM песни: </label>
+    <input type="number" id="bpm" placeholder="BPM" min="30" max="240"><br><br>
+
+    <label for="beats">Количество тактов (через сколько тактов менять число): </label>
+    <input type="number" id="beats" placeholder="Количество тактов" min="1" max="16"><br><br>
+
+    <button onclick="startGenerating()">Запуск генератора</button>
+    <button onclick="stopGenerating()">Остановить генератор</button>
+    
+    <!-- Новая строка "h: xxxxxxxx" -->
+    <p id="lineText">h: xxxxxxxx</p>
+    
+    <!-- Метки для "s" и "k", теперь это span -->
+    <p><span id="snareLabel">s:</span> <span id="snarePlaceText">Нажмите кнопку для начала</span></p>
+
+    <p><span id="kickLabel">k:</span> <span id="kickPlaceText">Нажмите кнопку для начала</span></p>
+
+    <script>
+        let intervalId; // переменная для хранения идентификатора интервала
+        let bpm; // переменная для BPM
+        let beats; // переменная для количества тактов
+        let kick_place; // переменная для генерации kick_place
+        let snare_place; // переменная для генерации snare_place
+
+        // Функция запуска генератора
+        function startGenerating() {
+            bpm = document.getElementById('bpm').value; // получаем BPM из поля ввода
+            beats = document.getElementById('beats').value; // получаем количество тактов из поля ввода
+            
+            // Проверим, что BPM и количество тактов введены
+            if (!bpm || bpm <= 0 || !beats || beats <= 0) {
+                alert("Пожалуйста, введите корректные значения для BPM и количества тактов.");
+                return;
+            }
+
+            // Рассчитываем время одного такта в секундах
+            const timePerBeat = 60 / bpm;
+
+            // Рассчитываем время для заданного количества тактов в миллисекундах
+            const intervalTime = timePerBeat * beats * 1000; // время в миллисекундах для указанного количества тактов
+
+            // Останавливаем предыдущий интервал, если он был
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+
+            // Запускаем новый интервал
+            intervalId = setInterval(generateRandomNumber, intervalTime);
+
+            // Генерация первого числа сразу
+            generateRandomNumber();
+        }
+
+        // Функция генерации случайных чисел для kick_place и snare_place
+        function generateRandomNumber() {
+            // Генерация случайного числа для переменной kick_place (от 1 до 8)
+            kick_place = Math.floor(Math.random() * 8) + 1;
+            // Генерация случайного числа для переменной snare_place (от 1 до 8)
+            snare_place = Math.floor(Math.random() * 8) + 1;
+
+            // Генерация текста для переменной snare_place с маленькой "о"
+            let snareText = generateText(snare_place);
+
+            // Генерация текста для переменной kick_place с маленькой "о"
+            let kickText = generateText(kick_place);
+
+            document.getElementById("snarePlaceText").textContent = snareText;
+            document.getElementById("kickPlaceText").textContent = kickText;
+        }
+
+        // Функция генерации текста для строк с случайным количеством "о"
+        function generateText(place) {
+            let numO = Math.floor(Math.random() * 4) + 1; // Генерация случайного количества "о" от 1 до 4
+            let positions = [];
+
+            // Генерация случайных позиций для "о" в строке из 8 символов
+            while (positions.length < numO) {
+                let randomPosition = Math.floor(Math.random() * 8);
+                if (!positions.includes(randomPosition)) {
+                    positions.push(randomPosition);
+                }
+            }
+
+            // Формируем строку
+            let text = '';
+            for (let i = 0; i < 8; i++) {
+                if (positions.includes(i)) {
+                    text += 'о';
+                } else {
+                    text += 'x';
+                }
+            }
+
+            return text;
+        }
+
+        // Функция остановки генератора
+        function stopGenerating() {
+            // Останавливаем интервал, если он был
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null; // сбрасываем идентификатор интервала
+                // Теперь просто оставляем последние сгенерированные строки
+            }
+        }
+    </script>
+</body>
+</html>
